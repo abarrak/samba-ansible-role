@@ -1,0 +1,57 @@
+---
+# tasks file for samba_server
+- name: install software packages
+  yum:
+    name:
+      - samba
+      - samba-client
+      - samba-common
+    state: present
+
+- name: create shared directory
+  file:
+    path: "{{ share_directory }}"
+    state: directory
+    mode: "777"
+    setype: samba_share_t
+
+- name: setup SELinux type persistently for shared directory
+  sefcontext:
+    target: "{{ share_directory }}"
+    setype: samba_share_t
+    state: present
+
+- name: restore context
+  shell: restorecon -Rv "{{ share_directory }}(/*.)?"
+
+- name: configure shared directory
+  blockinfile:
+    path: /etc/samba/smb.conf
+    block: |
+      [{{ share_name }}]
+        comment = {{ share_name }}
+        path = {{ share_directory }}
+        read only = No
+    validate: testparm
+
+- name: allow firewall rule for samba
+  ansible.posix.firewalld:
+    service: samba
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: create samba accounts
+  shell: |
+    (echo {{ item.password }}; echo {{ item.password }}) | smbpasswd -a {{ item.key }} -s
+  when: samba_users is defined
+  loop: samba_users
+
+- name: start services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - smb
+    - nmb

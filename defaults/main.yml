@@ -1,0 +1,13 @@
+---
+# defaults file for samba_server
+share_directory: /shares/
+share_name: Managed Share Directory
+
+##
+# Define the users' passwords through vault as follows:
+# ```
+# samba_users:
+#   jane: password
+#   norah: 112233
+# ```
+samba_users: {}
