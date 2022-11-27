@@ -1,2 +1,10 @@
 ---
 # handlers file for samba_server
+- name: start services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - smb
+    - nmb

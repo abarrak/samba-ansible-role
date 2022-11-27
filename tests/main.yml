@@ -1,0 +1,15 @@
+--- 
+- hosts: 127.0.0.1
+  become: true
+  connection: paramiko
+  vars: 
+    ansible_ssh_user: vagrant
+    ansible_ssh_port: 2222
+  vars_files:
+    - ../defaults/main.yml
+  tasks:
+    - name: test role tasks
+      ansible.builtin.include_tasks: ../tasks/main.yml
+        
+  handlers:
+    - import_tasks: ../handlers/main.yml

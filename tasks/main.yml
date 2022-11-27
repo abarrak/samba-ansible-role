@@ -1,11 +1,16 @@
 ---
 # tasks file for samba_server
 - name: install software packages
-  yum:
+  package:
     name:
       - samba
       - samba-client
-      - samba-common
+      - samba-common    
+    state: present
+
+- name: install SElinux package
+  yum:
+    name: python3-policycoreutils.noarch
     state: present
 
 - name: create shared directory
@@ -17,22 +22,20 @@
 
 - name: setup SELinux type persistently for shared directory
   sefcontext:
-    target: "{{ share_directory }}"
+    target: "{{ share_directory }}(/.*)?"
     setype: samba_share_t
     state: present
 
 - name: restore context
-  shell: restorecon -Rv "{{ share_directory }}(/*.)?"
+  shell: restorecon -Rv {{ share_directory }}
 
 - name: configure shared directory
   blockinfile:
     path: /etc/samba/smb.conf
-    block: |
-      [{{ share_name }}]
-        comment = {{ share_name }}
-        path = {{ share_directory }}
-        read only = No
-    validate: testparm
+    block: "{{ lookup('template', '../templates/smb.conf.j2') }}"
+    # validate: testparm
+  notify:
+    - start services
 
 - name: allow firewall rule for samba
   ansible.posix.firewalld:
@@ -40,18 +43,11 @@
     permanent: yes
     state: enabled
     immediate: true
+  ignore_errors: true
 
 - name: create samba accounts
   shell: |
     (echo {{ item.password }}; echo {{ item.password }}) | smbpasswd -a {{ item.key }} -s
-  when: samba_users is defined
-  loop: samba_users
-
-- name: start services
-  service:
-    name: "{{ item }}"
-    state: started
-    enabled: true
-  loop:
-    - smb
-    - nmb
+  when: samba_users is defined and len(samba_users) > 1
+  loop: "{{ samba_users   }}"
+  
