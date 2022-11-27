@@ -20,13 +20,13 @@ Example Playbook
 
 Install the role:
 
-    ansible-galaxy install abarrak.samba
+    ansible-galaxy install abarrak.samba_ansible_role
 
 Include it to run the setup tasks:
 
     - hosts: samba-server
       import_role:
-        name: abarrak.samba
+        name: abarrak.samba_ansible_role
 
 License
 -------
