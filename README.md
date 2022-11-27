@@ -1,6 +1,8 @@
 Samba Server Role
 =================
 
+[![Release](https://github.com/abarrak/samba-ansible-role/actions/workflows/release.yml/badge.svg)](https://github.com/abarrak/samba-ansible-role/actions/workflows/release.yml)
+
 This role contains the setup for minimal Samba server, translated from [this article](https://www.redhat.com/sysadmin/getting-started-samba).
 
 Requirements
